@@ -4,34 +4,15 @@ import 'package:flutter/material.dart';
 
 enum DraggablePanelPosition { start, end }
 
-abstract class DraggablePanel extends StatefulWidget {
+class DraggablePanel extends StatefulWidget {
+  final Key key;
   final double maxDragExtent;
   final DraggablePanelPosition position;
 
-  DraggablePanel({this.maxDragExtent, this.position});
+  DraggablePanel({this.key, this.maxDragExtent = 200.0, this.position = DraggablePanelPosition.end}) : super(key: key);
 
   @override
   _DraggablePanelState createState() => _DraggablePanelState();
-}
-
-class DraggableStartPanel extends DraggablePanel {
-  final double maxDragExtent;
-
-  DraggableStartPanel({this.maxDragExtent = 200.0})
-      : super(
-          maxDragExtent: maxDragExtent,
-          position: DraggablePanelPosition.start,
-        );
-}
-
-class DraggableEndPanel extends DraggablePanel {
-  final double maxDragExtent;
-
-  DraggableEndPanel({this.maxDragExtent = 200.0})
-      : super(
-          maxDragExtent: maxDragExtent,
-          position: DraggablePanelPosition.end,
-        );
 }
 
 class _DraggablePanelState extends State<DraggablePanel> {

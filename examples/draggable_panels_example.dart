@@ -11,10 +11,11 @@ class DraggablePanelsExample extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: DraggablePanelWrapper(
-          startPanel: DraggableStartPanel(
+          startPanel: DraggablePanel(
             maxDragExtent: 500.0,
+            position: DraggablePanelPosition.start,
           ),
-          endPanel: DraggableEndPanel(
+          endPanel: DraggablePanel(
             maxDragExtent: 500.0,
           ),
           child: Container(),

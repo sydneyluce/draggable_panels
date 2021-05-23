@@ -2,11 +2,14 @@ import 'package:draggable_panels/draggable_panels.dart';
 import 'package:flutter/material.dart';
 
 class DraggablePanelWrapper extends StatelessWidget {
-  final DraggableStartPanel startPanel;
-  final DraggableEndPanel endPanel;
+  final DraggablePanel startPanel;
+  final DraggablePanel endPanel;
   final Widget child;
 
-  DraggablePanelWrapper({this.startPanel, this.endPanel, this.child});
+  DraggablePanelWrapper({this.startPanel, this.endPanel, this.child}) {
+    if (startPanel != null) assert(startPanel.position == DraggablePanelPosition.start);
+    if (endPanel != null) assert(endPanel.position == DraggablePanelPosition.end);
+  }
 
   @override
   Widget build(BuildContext context) {
