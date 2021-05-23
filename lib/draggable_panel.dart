@@ -8,16 +8,21 @@ class DraggablePanel extends StatefulWidget {
   final Key key;
   final double maxDragExtent;
   final DraggablePanelPosition position;
+  final VoidCallback collapsed;
+  final VoidCallback expanded;
 
-  DraggablePanel({this.key, this.maxDragExtent = 200.0, this.position = DraggablePanelPosition.end}) : super(key: key);
+  DraggablePanel({this.key, this.maxDragExtent = 200.0, this.position = DraggablePanelPosition.end, this.collapsed, this.expanded}) : super(key: key);
 
   @override
-  _DraggablePanelState createState() => _DraggablePanelState();
+  DraggablePanelState createState() => DraggablePanelState();
 }
 
-class _DraggablePanelState extends State<DraggablePanel> {
+class DraggablePanelState extends State<DraggablePanel> {
   double _dragExtent = 0.0;
   bool _expanded = false;
+
+  double get dragExtent => _dragExtent;
+  bool get expanded => _expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +44,28 @@ class _DraggablePanelState extends State<DraggablePanel> {
         ],
       ),
     );
+  }
+
+  void expand() {
+    setState(() {
+      _dragExtent = widget.maxDragExtent;
+      _expanded = true;
+    });
+
+    if (widget.expanded != null) {
+      widget.expanded();
+    }
+  }
+
+  void collapse() {
+    setState(() {
+      _dragExtent = 0.0;
+      _expanded = false;
+    });
+
+    if (widget.collapsed != null) {
+      widget.collapsed();
+    }
   }
 
   double _calculateDragExtent(double yPos) {
@@ -68,15 +95,11 @@ class _DraggablePanelState extends State<DraggablePanel> {
   }
 
   void _handleDragEnd(DragEndDetails details) {
-    setState(() {
-      if (_dragExtent.clamp(_calculateMinDragExtent(), widget.maxDragExtent) == _dragExtent) {
-        _dragExtent = widget.maxDragExtent;
-        _expanded = true;
-      } else {
-        _dragExtent = 0;
-        _expanded = false;
-      }
-    });
+    if (_dragExtent.clamp(_calculateMinDragExtent(), widget.maxDragExtent) == _dragExtent) {
+      expand();
+    } else {
+      collapse();
+    }
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
