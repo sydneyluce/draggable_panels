@@ -14,64 +14,37 @@ class DraggablePanelWrapper extends StatefulWidget {
 }
 
 class _DraggablePanelWrapperState extends State<DraggablePanelWrapper> {
-  GlobalKey<DraggablePanelState> _startPanelStateKey;
-  GlobalKey<DraggablePanelState> _endPanelStateKey;
-
-  DraggablePanel _startPanel;
-  DraggablePanel _endPanel;
-
-  @override
-  void initState() {
-    _startPanel = _reconstructDraggablePanel(widget.startPanel);
-    _endPanel = _reconstructDraggablePanel(widget.endPanel);
-
-    _startPanelStateKey = _startPanel.key;
-    _endPanelStateKey = _endPanel.key;
-
-    super.initState();
-  }
+  final GlobalKey<DraggablePanelControllerState> _startPanelController = new GlobalKey();
+  final GlobalKey<DraggablePanelControllerState> _endPanelController = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (_startPanel != null) _startPanel,
-        Expanded(
-          child: widget.child,
-        ),
-        if (_endPanel != null) _endPanel,
+        if (widget.startPanel != null) _buildStartDraggablePanelController(),
+        Expanded(child: widget.child),
+        if (widget.endPanel != null) _buildEndDraggablePanelController(),
       ],
     );
   }
 
-  void _onStartPanelExpanded() {
-    if (_endPanelStateKey.currentState.expanded) {
-      _endPanelStateKey.currentState.collapse();
-    }
+  DraggablePanelController _buildStartDraggablePanelController() {
+    return DraggablePanelController(
+      key: _startPanelController,
+      child: widget.startPanel,
+      position: DraggablePanelPosition.start,
+      dragStarted: () {
+        if (_endPanelController.currentState.expanded) _endPanelController.currentState.collapse();
+      },
+    );
   }
 
-  void _onEndPanelExpanded() {
-    if (_startPanelStateKey.currentState.expanded) {
-      _startPanelStateKey.currentState.collapse();
-    }
-  }
-
-  DraggablePanel _reconstructDraggablePanel(DraggablePanel draggablePanel) {
-    if (draggablePanel == null) return null;
-
-    return DraggablePanel(
-      key: draggablePanel.key != null ? draggablePanel.key : new GlobalKey<DraggablePanelState>(),
-      maxDragExtent: draggablePanel.maxDragExtent,
-      position: draggablePanel.position,
-      collapsed: draggablePanel.collapsed,
-      expanded: () {
-        if (draggablePanel.position == DraggablePanelPosition.end) {
-          this._onEndPanelExpanded();
-        } else {
-          this._onStartPanelExpanded();
-        }
-
-        if (draggablePanel.expanded != null) draggablePanel.expanded();
+  DraggablePanelController _buildEndDraggablePanelController() {
+    return DraggablePanelController(
+      key: _endPanelController,
+      child: widget.endPanel,
+      dragStarted: () {
+        if (_startPanelController.currentState.expanded) _startPanelController.currentState.collapse();
       },
     );
   }

@@ -4,20 +4,33 @@ import 'package:flutter/material.dart';
 
 enum DraggablePanelPosition { start, end }
 
-class DraggablePanel extends StatefulWidget {
-  final Key key;
+class DraggablePanel extends StatelessWidget {
   final double maxDragExtent;
-  final DraggablePanelPosition position;
-  final VoidCallback collapsed;
-  final VoidCallback expanded;
+  final Widget child;
 
-  DraggablePanel({this.key, this.maxDragExtent = 200.0, this.position = DraggablePanelPosition.end, this.collapsed, this.expanded}) : super(key: key);
+  DraggablePanel({this.maxDragExtent = 200.0, this.child});
 
   @override
-  DraggablePanelState createState() => DraggablePanelState();
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: child,
+    );
+  }
 }
 
-class DraggablePanelState extends State<DraggablePanel> {
+class DraggablePanelController extends StatefulWidget {
+  final Key key;
+  final DraggablePanel child;
+  final DraggablePanelPosition position;
+  final VoidCallback dragStarted;
+
+  DraggablePanelController({this.key, @required this.child, this.position = DraggablePanelPosition.end, this.dragStarted}) : super(key: key);
+
+  @override
+  DraggablePanelControllerState createState() => DraggablePanelControllerState();
+}
+
+class DraggablePanelControllerState extends State<DraggablePanelController> {
   double _dragExtent = 0.0;
   bool _expanded = false;
 
@@ -34,13 +47,14 @@ class DraggablePanelState extends State<DraggablePanel> {
         children: [
           Container(
             height: _dragExtent,
-            child: SingleChildScrollView(),
+            child: widget.child,
           ),
           DragDetectionWrapper(
+            onDragStart: _handleDragStart,
             onDragUpdate: _handleDragUpdate,
             onDragEnd: _handleDragEnd,
             child: DraggablePanelTab(),
-          )
+          ),
         ],
       ),
     );
@@ -48,24 +62,16 @@ class DraggablePanelState extends State<DraggablePanel> {
 
   void expand() {
     setState(() {
-      _dragExtent = widget.maxDragExtent;
+      _dragExtent = widget.child.maxDragExtent;
       _expanded = true;
     });
-
-    if (widget.expanded != null) {
-      widget.expanded();
-    }
   }
 
   void collapse() {
     setState(() {
-      _dragExtent = 0.0;
+      _dragExtent = 0;
       _expanded = false;
     });
-
-    if (widget.collapsed != null) {
-      widget.collapsed();
-    }
   }
 
   double _calculateDragExtent(double yPos) {
@@ -83,19 +89,23 @@ class DraggablePanelState extends State<DraggablePanel> {
     else
       incrementBy = 0;
 
-    return (_dragExtent + incrementBy).clamp(0.0, widget.maxDragExtent);
+    return (_dragExtent + incrementBy).clamp(0.0, widget.child.maxDragExtent);
   }
 
   double _calculateMinDragExtent() {
-    return _expanded ? widget.maxDragExtent - 50.0 : 50.0;
+    return _expanded ? widget.child.maxDragExtent - 50.0 : 50.0;
   }
 
   VerticalDirection _determineVerticalDirection() {
     return widget.position == DraggablePanelPosition.end ? VerticalDirection.up : VerticalDirection.down;
   }
 
+  void _handleDragStart(DragStartDetails details) {
+    widget.dragStarted();
+  }
+
   void _handleDragEnd(DragEndDetails details) {
-    if (_dragExtent.clamp(_calculateMinDragExtent(), widget.maxDragExtent) == _dragExtent) {
+    if (_dragExtent.clamp(_calculateMinDragExtent(), widget.child.maxDragExtent) == _dragExtent) {
       expand();
     } else {
       collapse();

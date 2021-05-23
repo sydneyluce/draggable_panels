@@ -13,7 +13,6 @@ class DraggablePanelsExample extends StatelessWidget {
         body: DraggablePanelWrapper(
           startPanel: DraggablePanel(
             maxDragExtent: 500.0,
-            position: DraggablePanelPosition.start,
           ),
           endPanel: DraggablePanel(
             maxDragExtent: 500.0,
