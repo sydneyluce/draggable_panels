@@ -62,7 +62,7 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
 
   void expand() {
     setState(() {
-      _dragExtent = widget.child.maxDragExtent;
+      _dragExtent = _calculateResponsiveMaxDragExtent();
       _expanded = true;
     });
   }
@@ -74,18 +74,18 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
     });
   }
 
-  double _calculateDragExtent(double yPos) {
+  double _calculateDragExtent(Offset delta) {
     bool inStartPosition = widget.position == DraggablePanelPosition.start;
     bool inEndPosition = widget.position == DraggablePanelPosition.end;
-    bool isDraggingUp = yPos <= -1.0;
-    bool isDraggingDown = yPos >= 1.0;
+    bool isDraggingUp = delta.dy <= -1.0;
+    bool isDraggingDown = delta.dy >= 1.0;
 
     double incrementBy;
 
     if (inStartPosition && isDraggingDown || inEndPosition && isDraggingUp)
-      incrementBy = 1.0;
+      incrementBy = delta.distance;
     else if (inStartPosition && isDraggingUp || inEndPosition && isDraggingDown)
-      incrementBy = -1.0;
+      incrementBy = -delta.distance;
     else
       incrementBy = 0;
 
@@ -119,8 +119,9 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
+    print(details.delta.distance);
     setState(() {
-      _dragExtent = _calculateDragExtent(details.delta.dy);
+      _dragExtent = _calculateDragExtent(details.delta);
     });
   }
 }
