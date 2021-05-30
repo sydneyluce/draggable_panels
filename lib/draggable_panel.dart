@@ -46,7 +46,7 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: _dragExtent,
+            height: _dragExtent.clamp(0, _calculateResponsiveMaxDragExtent()),
             child: widget.child,
           ),
           DragDetectionWrapper(
@@ -90,6 +90,12 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
       incrementBy = 0;
 
     return (_dragExtent + incrementBy).clamp(0.0, widget.child.maxDragExtent);
+  }
+
+  double _calculateResponsiveMaxDragExtent() {
+    double screenHeight = MediaQuery.of(context).size.height - 74;
+
+    return widget.child.maxDragExtent < screenHeight ? widget.child.maxDragExtent : screenHeight;
   }
 
   double _calculateMinDragExtent() {
