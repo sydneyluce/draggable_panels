@@ -30,12 +30,30 @@ class DraggablePanelController extends StatefulWidget {
   DraggablePanelControllerState createState() => DraggablePanelControllerState();
 }
 
-class DraggablePanelControllerState extends State<DraggablePanelController> {
+class DraggablePanelControllerState extends State<DraggablePanelController> with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+  Animation _animation;
+
   double _dragExtent = 0.0;
   bool _expanded = false;
 
   double get dragExtent => _dragExtent;
   bool get expanded => _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(duration: Duration(milliseconds: 500), vsync: this)
+      ..addListener(() => setState(() {}))
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() {
+            _dragExtent = _animation.value;
+          });
+        }
+      });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +64,7 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: _dragExtent.clamp(0, _calculateResponsiveMaxDragExtent()),
+            height: _animationController.isAnimating ? _animation.value : _dragExtent,
             child: widget.child,
           ),
           DragDetectionWrapper(
@@ -62,14 +80,24 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
 
   void expand() {
     setState(() {
-      _dragExtent = _calculateResponsiveMaxDragExtent();
+      _animationController.reset();
+
+      _animation = Tween(begin: _dragExtent, end: _calculateResponsiveMaxDragExtent()).animate(_animationController);
+
+      _animationController.forward();
+
       _expanded = true;
     });
   }
 
   void collapse() {
     setState(() {
-      _dragExtent = 0;
+      _animationController.reset();
+
+      _animation = Tween(begin: _dragExtent, end: 0.0).animate(_animationController);
+
+      _animationController.forward();
+
       _expanded = false;
     });
   }
@@ -119,7 +147,6 @@ class DraggablePanelControllerState extends State<DraggablePanelController> {
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
-    print(details.delta.distance);
     setState(() {
       _dragExtent = _calculateDragExtent(details.delta);
     });
